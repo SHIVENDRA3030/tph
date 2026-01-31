@@ -30,6 +30,8 @@ const severityConfig: Record<AlertSeverity, { color: string; bg: string; label: 
   safe: { color: 'text-alert-green', bg: 'bg-alert-green/20', label: 'SAFE' },
 };
 
+
+// Vercel Cache Bust: 1
 export default function AlertPanel({ currentAlert }: AlertPanelProps) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
 
