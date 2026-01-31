@@ -32,7 +32,7 @@ const severityConfig: Record<AlertSeverity, { color: string; bg: string; label: 
 
 export default function AlertPanel({ currentAlert }: AlertPanelProps) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [expandedAlert, setExpandedAlert] = useState<string | null>(currentAlert ?? null);
   const [filter, setFilter] = useState<DisasterType | 'all'>('all');
   const [showRouteModal, setShowRouteModal] = useState(false);
@@ -74,7 +74,7 @@ export default function AlertPanel({ currentAlert }: AlertPanelProps) {
       } catch (error) {
         console.error('Error fetching alerts:', error);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 

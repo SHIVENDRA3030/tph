@@ -43,7 +43,7 @@ export default function ComplaintPage({ user }: ComplaintPageProps) {
   const [submitted, setSubmitted] = useState(false);
   const [selectedType, setSelectedType] = useState<string>('');
   const [images, setImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const formRef = useRef<HTMLDivElement>(null);
 
   const fetchComplaints = async () => {
@@ -72,7 +72,7 @@ export default function ComplaintPage({ user }: ComplaintPageProps) {
     } catch (error) {
       console.error('Error fetching complaints:', error);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
