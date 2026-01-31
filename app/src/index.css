@@ -1,0 +1,365 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 70% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 100% 65%;
+    --radius: 0.625rem;
+    
+    /* Custom Disaster Alert Colors */
+    --alert-red: 0 100% 65%;
+    --alert-blue: 220 100% 65%;
+    --alert-yellow: 45 100% 50%;
+    --alert-green: 145 100% 40%;
+    --alert-orange: 25 100% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Cinematic entrance animation */
+  .animate-cinematic {
+    animation: cinematic-entrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  @keyframes cinematic-entrance {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Urgent pulse animation */
+  .animate-urgent-pulse {
+    animation: urgent-pulse 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  }
+  
+  @keyframes urgent-pulse {
+    0%, 100% {
+      opacity: 0.5;
+      box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4);
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 20px 10px rgba(255, 77, 77, 0.2);
+    }
+  }
+  
+  /* Heartbeat animation */
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes heartbeat {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Float animation */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  /* Glass morphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-strong {
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Text gradient */
+  .text-gradient {
+    background: linear-gradient(135deg, #FF4D4D 0%, #4D79FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Alert glow */
+  .alert-glow {
+    box-shadow: 0 0 30px rgba(255, 77, 77, 0.5);
+  }
+  
+  /* Safe glow */
+  .safe-glow {
+    box-shadow: 0 0 30px rgba(0, 200, 81, 0.5);
+  }
+  
+  /* Warning glow */
+  .warning-glow {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+  }
+  
+  /* Noise texture overlay */
+  .noise-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+  
+  /* Route animation */
+  .route-flow {
+    stroke-dasharray: 10 5;
+    animation: route-flow 1s linear infinite;
+  }
+  
+  @keyframes route-flow {
+    to {
+      stroke-dashoffset: -15;
+    }
+  }
+  
+  /* Marker bounce */
+  .marker-bounce {
+    animation: marker-bounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  @keyframes marker-bounce {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  /* Ripple effect */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    animation: ripple-effect 0.6s ease-out;
+  }
+  
+  @keyframes ripple-effect {
+    to {
+      width: 200%;
+      height: 200%;
+      opacity: 0;
+    }
+  }
+  
+  /* Card hover lift */
+  .card-lift {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  }
+  
+  .card-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Typewriter effect */
+  .typewriter {
+    overflow: hidden;
+    border-right: 2px solid hsl(var(--primary));
+    white-space: nowrap;
+    animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+  }
+  
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+  
+  @keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: hsl(var(--primary)) }
+  }
+  
+  /* Accordion card expansion */
+  .accordion-card {
+    flex: 1;
+    transition: flex 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  .accordion-card:hover {
+    flex: 3;
+  }
+  
+  /* Map tilt effect */
+  .map-tilt {
+    transform: perspective(1000px) rotateX(10deg);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .map-tilt.flat {
+    transform: perspective(1000px) rotateX(0deg);
+  }
+  
+  /* Ticker animation */
+  .ticker {
+    animation: ticker 30s linear infinite;
+  }
+  
+  @keyframes ticker {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .ticker:hover {
+    animation-play-state: paused;
+  }
+  
+  /* Status badges */
+  .status-critical {
+    @apply bg-red-500/20 text-red-400 border-red-500/50;
+  }
+  
+  .status-warning {
+    @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/50;
+  }
+  
+  .status-safe {
+    @apply bg-green-500/20 text-green-400 border-green-500/50;
+  }
+  
+  .status-info {
+    @apply bg-blue-500/20 text-blue-400 border-blue-500/50;
+  }
+}
+
+/* Leaflet map custom styles */
+.leaflet-container {
+  background: hsl(var(--background));
+  font-family: 'Inter', sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border-radius: var(--radius);
+}
+
+.leaflet-popup-tip {
+  background: hsl(var(--card));
+}
+
+/* Custom marker animations */
+.custom-marker {
+  transition: transform 0.3s ease;
+}
+
+.custom-marker:hover {
+  transform: scale(1.2);
+}
+
+/* Disaster radius pulse */
+.disaster-radius {
+  animation: radius-pulse 2s ease-out infinite;
+}
+
+@keyframes radius-pulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
