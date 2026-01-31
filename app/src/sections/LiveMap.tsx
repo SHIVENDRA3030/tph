@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { 
-  MapPin, 
-  Navigation, 
-  Layers, 
+import {
+  MapPin,
+  Navigation,
+  Layers,
   Filter,
   Shield,
   Building2,
@@ -19,186 +19,141 @@ import { mockAlerts, mockFacilities } from '@/data/mockData';
 import type { Facility, FacilityType } from '@/types';
 import { cn } from '@/lib/utils';
 
-// Mock map component since we can't use actual Leaflet
-const MapView = ({ 
-  selectedFilter, 
+// Declare global mappls object from SDK
+declare global {
+  interface Window {
+    mappls: any;
+  }
+}
+
+// MapmyIndia Map Component
+const MapView = ({
+  selectedFilter,
   selectedFacility,
-  onFacilitySelect 
-}: { 
+  onFacilitySelect
+}: {
   selectedFilter: FacilityType | 'all' | 'disaster';
   selectedFacility: Facility | null;
   onFacilitySelect: (facility: Facility) => void;
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!mapContainerRef.current || mapRef.current) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resize = () => {
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    };
-
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Draw map
-    const draw = () => {
-      const width = canvas.offsetWidth;
-      const height = canvas.offsetHeight;
-
-      // Clear canvas
-      ctx.clearRect(0, 0, width, height);
-
-      // Draw grid background
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 1;
-      const gridSize = 40;
-      
-      for (let x = 0; x < width; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-      }
-      
-      for (let y = 0; y < height; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
+    // Wait for SDK to load
+    const initMap = () => {
+      if (!window.mappls) {
+        setTimeout(initMap, 100);
+        return;
       }
 
-      // Draw roads
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 3;
-      
-      // Main roads
-      const roads = [
-        { x1: 0, y1: height * 0.3, x2: width, y2: height * 0.3 },
-        { x1: 0, y1: height * 0.7, x2: width, y2: height * 0.7 },
-        { x1: width * 0.25, y1: 0, x2: width * 0.25, y2: height },
-        { x1: width * 0.75, y1: 0, x2: width * 0.75, y2: height },
-      ];
-
-      roads.forEach(road => {
-        ctx.beginPath();
-        ctx.moveTo(road.x1, road.y1);
-        ctx.lineTo(road.x2, road.y2);
-        ctx.stroke();
+      // Initialize the map centered on India (Delhi)
+      mapRef.current = new window.mappls.Map(mapContainerRef.current, {
+        center: { lat: 28.6139, lng: 77.2090 }, // New Delhi
+        zoom: 10,
+        zoomControl: true,
       });
 
-      // Draw disaster alerts
-      mockAlerts.forEach((alert, i) => {
-        const x = width * (0.2 + (i % 3) * 0.25);
-        const y = height * (0.2 + Math.floor(i / 3) * 0.4);
-
-        // Pulsing radius
-        const time = Date.now() / 1000;
-        const pulseRadius = 30 + Math.sin(time * 2 + i) * 5;
-        
-        ctx.beginPath();
-        ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
-        ctx.fillStyle = alert.severity === 'critical' 
-          ? 'rgba(255, 77, 77, 0.2)' 
-          : 'rgba(255, 215, 0, 0.2)';
-        ctx.fill();
-
-        // Center point
-        ctx.beginPath();
-        ctx.arc(x, y, 8, 0, Math.PI * 2);
-        ctx.fillStyle = alert.severity === 'critical' ? '#FF4D4D' : '#FFD700';
-        ctx.fill();
-
-        // Label
-        ctx.fillStyle = 'white';
-        ctx.font = '10px Inter';
-        ctx.textAlign = 'center';
-        ctx.fillText(alert.type.toUpperCase(), x, y + 20);
+      // Add markers after map loads
+      mapRef.current.on('load', () => {
+        addMarkers();
       });
-
-      // Draw facilities
-      mockFacilities.forEach((facility, i) => {
-        if (selectedFilter !== 'all' && selectedFilter !== 'disaster') {
-          if (facility.type !== selectedFilter) return;
-        }
-
-        const x = width * (0.15 + (i % 4) * 0.22);
-        const y = height * (0.25 + Math.floor(i / 4) * 0.35);
-
-        // Facility marker
-        const isSelected = selectedFacility?.id === facility.id;
-        
-        ctx.beginPath();
-        ctx.arc(x, y, isSelected ? 12 : 8, 0, Math.PI * 2);
-        
-        let color = '#00C851';
-        if (facility.type === 'hospital') color = '#4D79FF';
-        if (facility.type === 'fire_station') color = '#FF8C00';
-        if (facility.type === 'police_station') color = '#9B59B6';
-        
-        ctx.fillStyle = color;
-        ctx.fill();
-
-        if (isSelected) {
-          ctx.strokeStyle = 'white';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        }
-
-        // Label
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.font = '9px Inter';
-        ctx.textAlign = 'center';
-        ctx.fillText(facility.name.split(' ')[0], x, y + 18);
-      });
-
-      requestAnimationFrame(draw);
     };
 
-    const animationId = requestAnimationFrame(draw);
+    initMap();
 
     return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationId);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
+  }, []);
+
+  const addMarkers = () => {
+    if (!mapRef.current || !window.mappls) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Add disaster alert markers
+    mockAlerts.forEach((alert) => {
+      const color = alert.severity === 'critical' ? '#FF4D4D' : '#FFD700';
+
+      const markerEl = document.createElement('div');
+      markerEl.className = 'disaster-marker';
+      markerEl.style.cssText = `
+        width: 24px;
+        height: 24px;
+        background: ${color};
+        border: 2px solid white;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 0 10px ${color};
+        animation: pulse 2s infinite;
+      `;
+
+      const marker = new window.mappls.Marker({
+        map: mapRef.current,
+        position: { lat: alert.location.lat, lng: alert.location.lng },
+        element: markerEl,
+      });
+
+      markersRef.current.push(marker);
+    });
+
+    // Add facility markers
+    mockFacilities.forEach((facility) => {
+      if (selectedFilter !== 'all' && selectedFilter !== 'disaster' && facility.type !== selectedFilter) {
+        return;
+      }
+
+      let color = '#00C851';
+      if (facility.type === 'hospital') color = '#4D79FF';
+      if (facility.type === 'fire_station') color = '#FF8C00';
+      if (facility.type === 'police_station') color = '#9B59B6';
+
+      const isSelected = selectedFacility?.id === facility.id;
+
+      const markerEl = document.createElement('div');
+      markerEl.style.cssText = `
+        width: ${isSelected ? '28px' : '20px'};
+        height: ${isSelected ? '28px' : '20px'};
+        background: ${color};
+        border: 2px solid ${isSelected ? 'white' : 'rgba(255,255,255,0.5)'};
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s;
+      `;
+
+      markerEl.onclick = () => onFacilitySelect(facility);
+
+      const marker = new window.mappls.Marker({
+        map: mapRef.current,
+        position: { lat: facility.location.lat, lng: facility.location.lng },
+        element: markerEl,
+      });
+
+      markersRef.current.push(marker);
+    });
+  };
+
+  // Re-add markers when filter or selection changes
+  useEffect(() => {
+    if (mapRef.current && window.mappls) {
+      addMarkers();
+    }
   }, [selectedFilter, selectedFacility]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full cursor-crosshair"
-      onClick={(e) => {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (!rect) return;
-        
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        
-        // Find nearest facility
-        let nearest: Facility | null = null;
-        let minDist = Infinity;
-        
-        mockFacilities.forEach((facility, i) => {
-          const fx = 0.15 + (i % 4) * 0.22;
-          const fy = 0.25 + Math.floor(i / 4) * 0.35;
-          const dist = Math.sqrt((x - fx) ** 2 + (y - fy) ** 2);
-          
-          if (dist < minDist && dist < 0.1) {
-            minDist = dist;
-            nearest = facility;
-          }
-        });
-        
-        if (nearest) {
-          onFacilitySelect(nearest);
-        }
-      }}
+    <div
+      ref={mapContainerRef}
+      className="absolute inset-0 w-full h-full"
+      style={{ minHeight: '400px' }}
     />
   );
 };
@@ -263,10 +218,10 @@ export default function LiveMap() {
         </div>
 
         {/* Map Container */}
-        <div 
+        <div
           ref={mapRef}
           className="relative rounded-2xl overflow-hidden"
-          style={{ 
+          style={{
             perspective: '1000px',
             height: '600px'
           }}
@@ -298,7 +253,7 @@ export default function LiveMap() {
 
           {/* Map Canvas */}
           <div className="absolute inset-0 bg-card">
-            <MapView 
+            <MapView
               selectedFilter={selectedFilter}
               selectedFacility={selectedFacility}
               onFacilitySelect={setSelectedFacility}
@@ -353,7 +308,7 @@ export default function LiveMap() {
                       <p className="text-xs text-muted-foreground">{selectedFacility.type.replace('_', ' ').toUpperCase()}</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setSelectedFacility(null)}
                     className="p-1 hover:bg-white/10 rounded transition-colors"
                   >
@@ -363,7 +318,7 @@ export default function LiveMap() {
 
                 <div className="space-y-2 text-sm">
                   <p className="text-muted-foreground">{selectedFacility.location.address}</p>
-                  
+
                   {selectedFacility.capacity && (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Capacity</span>
@@ -385,7 +340,7 @@ export default function LiveMap() {
 
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Contact</span>
-                    <a 
+                    <a
                       href={`tel:${selectedFacility.contact.phone}`}
                       className="text-alert-blue hover:underline"
                     >
@@ -395,16 +350,16 @@ export default function LiveMap() {
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="flex-1 bg-alert-blue hover:bg-alert-blue/90"
                     onClick={() => setShowRoutePanel(true)}
                   >
                     <Route className="w-4 h-4 mr-2" />
                     Get Route
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="flex-1 border-white/20"
                   >
@@ -441,7 +396,7 @@ export default function LiveMap() {
       {/* Route Panel Modal */}
       {showRoutePanel && selectedFacility && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowRoutePanel(false)}
           />
@@ -449,7 +404,7 @@ export default function LiveMap() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white">Optimal Route</h3>
-                <button 
+                <button
                   onClick={() => setShowRoutePanel(false)}
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 >
@@ -474,7 +429,7 @@ export default function LiveMap() {
                 {/* Route Criteria */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium text-white">Route Optimization</h4>
-                  
+
                   {[
                     { label: 'Distance', value: `${selectedFacility.distance} km`, optimal: true },
                     { label: 'Traffic Level', value: 'Low', optimal: true },
