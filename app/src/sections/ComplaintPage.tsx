@@ -43,7 +43,7 @@ export default function ComplaintPage({ user }: ComplaintPageProps) {
   const [submitted, setSubmitted] = useState(false);
   const [selectedType, setSelectedType] = useState<string>('');
   const [images, setImages] = useState<string[]>([]);
-  // const [loading, setLoading] = useState(true);
+
   const formRef = useRef<HTMLDivElement>(null);
 
   const fetchComplaints = async () => {
